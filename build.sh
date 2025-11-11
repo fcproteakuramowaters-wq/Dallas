@@ -14,7 +14,7 @@ fi
 
 # Collect static files (Render expects this during build)
 echo "Collecting static files..."
-python manage.py collectstatic --noinput
+python manage.py collectstatic --noinput --clear
 
 # Run migrations if a DATABASE_URL is provided (optional)
 if [ -n "${DATABASE_URL:-}" ]; then

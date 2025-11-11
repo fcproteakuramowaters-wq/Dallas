@@ -1,0 +1,28 @@
+# Reference configuration for Render deployment
+# You can use this as a guide or upload it as render.yaml to your repository
+# If using render.yaml, Render will auto-detect these settings from your repo
+
+services:
+  - type: web
+    name: dallas-grand-beach
+    runtime: python
+    pythonVersion: 3.13  # Adjust to match your needs
+    
+    # Build command
+    buildCommand: bash ./build.sh
+    
+    # Start command (Render uses port 10000 by default)
+    startCommand: gunicorn -b 0.0.0.0:10000 dallas.wsgi
+    
+    # Environment variables (set these in Render dashboard for sensitive data)
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: ENVIRONMENT
+        value: "production"
+      # Set these secrets in the Render dashboard UI:
+      # SECRET_KEY
+      # ALLOWED_HOSTS
+      # GOOGLE_PLACES_API_KEY
+      # GOOGLE_PLACE_ID
+      # DATABASE_URL (if using hosted database)

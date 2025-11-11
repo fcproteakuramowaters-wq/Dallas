@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +21,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-cyo+n&o=+o8h$2as5w6du+&l0119-)w=2b3sg2(o^!d-@6&@5-'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-cyo+n&o=+o8h$2as5w6du+&l0119-)w=2b3sg2(o^!d-@6&@5-')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
+<<<<<<< HEAD
 ALLOWED_HOSTS = ['dallas-owo3.onrender.com','localhost','127.0.0.1']
+=======
+# ALLOWED_HOSTS should include just the domain (no protocol)
+# For Render, use just the domain name without https://
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,dallas-owo3.onrender.com').split(',')
+>>>>>>> ba8d434 (render Dallas Hotel)
 
 
 # Application definition
@@ -42,6 +49,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve static files efficiently on Render
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -119,6 +127,18 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 # Directory where `collectstatic` will gather static files for production (Render expects this)
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# WhiteNoise compression and caching for static files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Production security settings for Render
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
