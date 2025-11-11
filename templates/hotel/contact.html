@@ -23,8 +23,8 @@
   </head>
   <body class="antialiased text-gray-900 min-h-screen flex flex-col m-0">
 
-    <!-- Navbar (same as home.html) -->
-    <header class="w-full bg-gray-800 shadow">
+    <!-- Navbar (Fixed, like home.html) -->
+    <header class="w-full fixed top-0 left-0 z-50 bg-gray-800 bg-opacity-95 shadow">
       <nav class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <div class="flex items-center gap-4">
           <a href="{% url 'home' %}">
@@ -77,7 +77,7 @@
       }
     </script>
 
-    <main class="flex-grow py-16">
+    <main class="flex-grow pt-20 py-16">
       <!-- Page Title -->
       <div class="text-center mb-12">
         <h1 class="text-4xl font-bold text-gray-800">Contact & Support</h1>
