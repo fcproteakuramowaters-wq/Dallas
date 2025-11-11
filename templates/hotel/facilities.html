@@ -1,0 +1,468 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Facilities - Dallas Grand Beach Hotel</title>
+    <link rel="icon" href="{% static 'images/resources/logo.png' %}" type="image/png">
+  <!-- Tailwind Play CDN for quick styling -->
+  <script src="https://cdn.tailwindcss.com" defer></script>
+  <meta name="description" content="Explore world-class facilities at Dallas Grand Beach Hotel including a casino, pool bar, gym, nightclub and event center—designed for luxury and leisure.">
+  <meta name="robots" content="index,follow">
+  <meta property="og:title" content="Facilities — Dallas Grand Beach Hotel">
+  <meta property="og:description" content="Discover premium amenities and leisure facilities at Dallas Grand Beach Hotel. From poolside bars to event spaces, experience true resort luxury.">
+  {% if request %}<link rel="canonical" href="{{ request.build_absolute_uri }}" />{% endif %}
+    <style>
+      /* Fade effect for scrolling */
+      .fade-top {
+        mask-image: linear-gradient(to bottom, transparent 0%, black 30%);
+        -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%);
+      }
+      .fade-bottom {
+        mask-image: linear-gradient(to top, transparent 0%, black 30%);
+        -webkit-mask-image: linear-gradient(to top, transparent 0%, black 30%);
+      }
+
+      .facility-slider {
+        position: relative;
+        overflow: hidden;
+        border-radius: 1rem;
+      }
+      .facility-slide {
+        transition: opacity 0.5s ease-in-out;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .facility-nav-btn {
+        transition: all 0.2s ease;
+        z-index: 10;
+      }
+      .facility-nav-btn:hover {
+        background-color: rgba(255, 255, 255, 1);
+        transform: scale(1.1);
+      }
+
+      /* Grid layout: 2 columns on tablet+, 1 on mobile */
+      .facilities-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+      }
+
+      @media (min-width: 768px) {
+        .facilities-container {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (min-width: 1024px) {
+        .facilities-container {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      .facility-item {
+        display: flex;
+        flex-direction: column;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      .facility-item:hover {
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        transform: translateY(-5px);
+      }
+
+      .facility-image {
+        width: 100%;
+        height: 300px;
+        position: relative;
+        overflow: hidden;
+        background-color: #e0e0e0;
+      }
+
+      .facility-content {
+        padding: 2rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .facility-content h2 {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        color: #1f2937;
+      }
+
+      .facility-content p {
+        color: #4b5563;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        flex-grow: 1;
+      }
+
+      .facility-content ul {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .facility-content li {
+        color: #4b5563;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+    </style>
+  <body class="antialiased text-gray-900 min-h-screen flex flex-col m-0">
+
+    <!-- Navbar (Fixed, overlays content) -->
+    <header class="w-full fixed top-0 left-0 z-50 bg-gray-800 bg-opacity-95 shadow">
+      <nav class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <a href="{% url 'home' %}">
+            <img src="{% static 'images/resources/logo.png' %}" alt="Site logo" class="h-12 w-auto object-contain">
+          </a>
+        </div>
+
+        <ul class="hidden md:flex items-center gap-6 text-white font-medium">
+          <li><a href="{% url 'home' %}" class="text-white hover:text-blue-400 transition-colors">Home</a></li>
+          <li><a href="{% url 'rooms' %}" class="text-white hover:text-blue-400 transition-colors">Rooms</a></li>
+          <li><a href="{% url 'facilities' %}" class="text-white hover:text-blue-400 transition-colors">Facilities</a></li>
+          <li><a href="{% url 'reviews' %}" class="text-white hover:text-blue-400 transition-colors">Reviews</a></li>
+          <li><a href="{% url 'contact' %}" class="text-white hover:text-blue-400 transition-colors">Contact & Support</a></li>
+        </ul>
+
+        <!-- Mobile menu button -->
+        <div class="md:hidden">
+          <button id="mobile-menu-btn" aria-label="open menu" class="text-white text-2xl">☰</button>
+        </div>
+      </nav>
+      
+      <!-- Mobile menu (hidden by default, shown when button clicked) -->
+      <div id="mobile-menu" class="hidden md:hidden bg-gray-800 bg-opacity-95 shadow-lg">
+        <ul class="flex flex-col items-start gap-0 px-6 py-4 text-white font-medium">
+          <li class="w-full py-2 border-b border-gray-700"><a href="{% url 'home' %}" class="text-white hover:text-blue-400 transition-colors block">Home</a></li>
+          <li class="w-full py-2 border-b border-gray-700"><a href="{% url 'rooms' %}" class="text-white hover:text-blue-400 transition-colors block">Rooms</a></li>
+          <li class="w-full py-2 border-b border-gray-700"><a href="{% url 'facilities' %}" class="text-white hover:text-blue-400 transition-colors block">Facilities</a></li>
+          <li class="w-full py-2 border-b border-gray-700"><a href="{% url 'reviews' %}" class="text-white hover:text-blue-400 transition-colors block">Reviews</a></li>
+          <li class="w-full py-2"><a href="{% url 'contact' %}" class="text-white hover:text-blue-400 transition-colors block">Contact & Support</a></li>
+        </ul>
+      </div>
+    </header>
+    
+    <script>
+      // Mobile menu toggle
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      
+      if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', function() {
+          mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Close menu when a link is clicked
+        mobileMenu.querySelectorAll('a').forEach(link => {
+          link.addEventListener('click', function() {
+            mobileMenu.classList.add('hidden');
+          });
+        });
+      }
+    </script>
+
+    <main class="flex-grow pt-20">
+      <!-- Hero Section -->
+      <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16 md:py-24">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+          <h1 class="text-4xl md:text-5xl font-bold mb-4">World-Class Facilities</h1>
+          <p class="text-blue-100 text-lg">Discover our premium amenities designed for your ultimate comfort and entertainment</p>
+        </div>
+      </div>
+
+      <!-- Facilities Container -->
+      <div class="facilities-container max-w-7xl mx-auto px-6 py-16">
+        
+        <!-- Facility Section: Casino -->
+        <div class="facility-item">
+          <div class="facility-image">
+            <div class="facility-slider relative w-full h-full">
+              <img src="{% static 'images/resources/facilities/casino/1.jpg' %}" alt="Casino" class="facility-slide">
+              <button class="facility-nav-btn absolute left-4 top-1/2 -translate-y-1/2 bg-white/70 rounded-full px-3 py-2 text-xl font-bold hover:bg-white facility-casino-prev">◀</button>
+              <button class="facility-nav-btn absolute right-4 top-1/2 -translate-y-1/2 bg-white/70 rounded-full px-3 py-2 text-xl font-bold hover:bg-white facility-casino-next">▶</button>
+            </div>
+          </div>
+          <div class="facility-content">
+            <h2>Casino</h2>
+            <p>Step into our opulent gaming sanctuary, where world-class entertainment meets luxury. Our state-of-the-art casino features an extensive selection of gaming tables including blackjack, roulette, and poker, alongside cutting-edge slot machines.</p>
+            <ul>
+              <li>✓ <span>Table games & slot machines</span></li>
+              <li>✓ <span>Premium cocktail bar</span></li>
+              <li>✓ <span>Live entertainment</span></li>
+              <li>✓ <span>Professional dealers</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Facility Section: Event Center -->
+        <div class="facility-item">
+          <div class="facility-image">
+            <div class="facility-slider relative w-full h-full">
+              <img src="{% static 'images/resources/facilities/event-center/1.jpg' %}" alt="Event Center" class="facility-slide">
+              <button class="facility-nav-btn absolute left-4 top-1/2 -translate-y-1/2 bg-white/70 rounded-full px-3 py-2 text-xl font-bold hover:bg-white facility-event-prev">◀</button>
+              <button class="facility-nav-btn absolute right-4 top-1/2 -translate-y-1/2 bg-white/70 rounded-full px-3 py-2 text-xl font-bold hover:bg-white facility-event-next">▶</button>
+            </div>
+          </div>
+          <div class="facility-content">
+            <h2>Event Center</h2>
+            <p>Host your most important celebrations in our magnificent event center. Spanning thousands of square feet with soaring ceilings and customizable layouts, our venue is perfect for weddings, corporate conferences, gala dinners, and private functions.</p>
+            <ul>
+              <li>✓ <span>Flexible seating arrangements</span></li>
+              <li>✓ <span>State-of-the-art AV equipment</span></li>
+              <li>✓ <span>Full catering services</span></li>
+              <li>✓ <span>Professional event coordinators</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Facility Section: Gym -->
+        <div class="facility-item">
+          <div class="facility-image">
+            <div class="facility-slider relative w-full h-full">
+              <img src="{% static 'images/resources/facilities/gym/1.jpg' %}" alt="Gym" class="facility-slide">
+            </div>
+          </div>
+          <div class="facility-content">
+            <h2>Fitness Center</h2>
+            <p>Maintain your wellness routine at our state-of-the-art fitness center. Equipped with the latest cardio machines, free weights, strength training equipment, and functional fitness zones, our gym is staffed with professional trainers.</p>
+            <ul>
+              <li>✓ <span>Modern cardio equipment</span></li>
+              <li>✓ <span>Free weights & dumbbells</span></li>
+              <li>✓ <span>Professional trainers available</span></li>
+              <li>✓ <span>Air-conditioned comfort</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Facility Section: Night Club -->
+        <div class="facility-item">
+          <div class="facility-image">
+            <div class="facility-slider relative w-full h-full">
+              <img src="{% static 'images/resources/facilities/night-club/1.jpg' %}" alt="Night Club" class="facility-slide">
+              <button class="facility-nav-btn absolute left-4 top-1/2 -translate-y-1/2 bg-white/70 rounded-full px-3 py-2 text-xl font-bold hover:bg-white facility-nightclub-prev">◀</button>
+              <button class="facility-nav-btn absolute right-4 top-1/2 -translate-y-1/2 bg-white/70 rounded-full px-3 py-2 text-xl font-bold hover:bg-white facility-nightclub-next">▶</button>
+            </div>
+          </div>
+          <div class="facility-content">
+            <h2>Night Club</h2>
+            <p>Experience electrifying nights at our premium nightclub. Top DJs spin the latest tracks, live performers take the stage, and premium cocktails flow freely in an energetic atmosphere. Dance until dawn in our stylishly designed venue.</p>
+            <ul>
+              <li>✓ <span>International & local DJs</span></li>
+              <li>✓ <span>Live performances & entertainment</span></li>
+              <li>✓ <span>Premium cocktails & spirits</span></li>
+              <li>✓ <span>State-of-the-art sound & lighting</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Facility Section: Pool Bar -->
+        <div class="facility-item">
+          <div class="facility-image">
+            <div class="facility-slider relative w-full h-full">
+              <img src="{% static 'images/resources/facilities/pool-bar/1.jpg' %}" alt="Pool Bar" class="facility-slide">
+              <button class="facility-nav-btn absolute left-4 top-1/2 -translate-y-1/2 bg-white/70 rounded-full px-3 py-2 text-xl font-bold hover:bg-white facility-pool-prev">◀</button>
+              <button class="facility-nav-btn absolute right-4 top-1/2 -translate-y-1/2 bg-white/70 rounded-full px-3 py-2 text-xl font-bold hover:bg-white facility-pool-next">▶</button>
+            </div>
+          </div>
+          <div class="facility-content">
+            <h2>Pool Bar</h2>
+            <p>Relax in paradise at our luxurious poolside bar. Lounge in comfortable cabanas while enjoying refreshing tropical drinks, light appetizers, and stunning water views. Our pool bar combines the perfect blend of leisure and culinary excellence.</p>
+            <ul>
+              <li>✓ <span>Olympic-sized swimming pool</span></li>
+              <li>✓ <span>Tropical cocktails & mixology</span></li>
+              <li>✓ <span>Comfortable cabanas & loungers</span></li>
+              <li>✓ <span>Light meals & snacks</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Facility Section: Sports Bar -->
+        <div class="facility-item">
+          <div class="facility-image">
+            <div class="facility-slider relative w-full h-full">
+              <img src="{% static 'images/resources/facilities/sports-bar/1.jpg' %}" alt="Sports Bar" class="facility-slide">
+              <button class="facility-nav-btn absolute left-4 top-1/2 -translate-y-1/2 bg-white/70 rounded-full px-3 py-2 text-xl font-bold hover:bg-white facility-sports-prev">◀</button>
+              <button class="facility-nav-btn absolute right-4 top-1/2 -translate-y-1/2 bg-white/70 rounded-full px-3 py-2 text-xl font-bold hover:bg-white facility-sports-next">▶</button>
+            </div>
+          </div>
+          <div class="facility-content">
+            <h2>Sports Bar</h2>
+            <p>Catch every major sporting event at our state-of-the-art sports bar. Multiple high-definition screens display live games, matches, and tournaments from around the world. Enjoy cold beers, delicious pub fare, and electrifying energy.</p>
+            <ul>
+              <li>✓ <span>Multiple HD screens & projectors</span></li>
+              <li>✓ <span>Live sports coverage worldwide</span></li>
+              <li>✓ <span>Premium beers & beverages</span></li>
+              <li>✓ <span>Sports pub menu & appetizers</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Facility Section: Wine Bar -->
+        <div class="facility-item">
+          <div class="facility-image">
+            <div class="facility-slider relative w-full h-full">
+              <img src="{% static 'images/resources/facilities/wine-bar/1.jpg' %}" alt="Wine Bar" class="facility-slide">
+              <button class="facility-nav-btn absolute left-4 top-1/2 -translate-y-1/2 bg-white/70 rounded-full px-3 py-2 text-xl font-bold hover:bg-white facility-wine-prev">◀</button>
+              <button class="facility-nav-btn absolute right-4 top-1/2 -translate-y-1/2 bg-white/70 rounded-full px-3 py-2 text-xl font-bold hover:bg-white facility-wine-next">▶</button>
+            </div>
+          </div>
+          <div class="facility-content">
+            <h2>Wine Bar</h2>
+            <p>Indulge in refined elegance at our prestigious wine bar. Our curated selection of fine wines, premium spirits, and craft cocktails is expertly paired with gourmet appetizers and charcuterie. An ideal setting for intimate moments.</p>
+            <ul>
+              <li>✓ <span>Curated fine wine collection</span></li>
+              <li>✓ <span>Premium spirits & liqueurs</span></li>
+              <li>✓ <span>Gourmet pairings & charcuterie</span></li>
+              <li>✓ <span>Sophisticated ambiance</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    <!-- Footer (full-width, sits at bottom with no bottom margin) -->
+    <footer class="bg-gray-900 text-gray-200 mt-auto w-full">
+      <div class="w-full px-6 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <a href="#" class="inline-block mb-4">
+            <img src="{% static 'images/resources/logo.png' %}" alt="Dallas Grand Beach Hotel" class="h-12 w-auto object-contain">
+          </a>
+          <p class="text-sm text-gray-300">Dallas Grand Beach Hotel & Resort Suite<br>Oghara, Delta State</p>
+          <p class="mt-4 text-sm text-gray-400">© 2025 Dallas Grand Beach Hotel. All rights reserved.</p>
+        </div>
+
+        <div>
+          <h4 class="text-lg font-semibold mb-3">Quick Links</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="{% url 'home' %}" class="hover:text-white">Home</a></li>
+            <li><a href="{% url 'rooms' %}" class="hover:text-white">Rooms</a></li>
+            <li><a href="{% url 'facilities' %}" class="hover:text-white">Facilities</a></li>
+            <li><a href="{% url 'reviews' %}" class="hover:text-white">Reviews</a></li>
+            <li><a href="{% url 'contact' %}" class="hover:text-white">Contact & Support</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-lg font-semibold mb-3">Contact</h4>
+          <p class="text-sm text-gray-300">Phone: <a href="tel:+1234567890" class="hover:text-white">+1 (234) 567-890</a></p>
+          <p class="text-sm text-gray-300">Email: <a href="mailto:info@dallasgrandbeach.com" class="hover:text-white">info@dallasgrandbeach.com</a></p>
+          <p class="text-sm text-gray-300 mt-2">Reception: <span class="text-sm">Open 24/7</span></p>
+        </div>
+
+        <div>
+          <h4 class="text-lg font-semibold mb-3">Follow Us</h4>
+          <div class="flex items-center gap-4">
+            <a href="#" class="block" aria-label="Facebook">
+              <img src="{% static 'images/resources/social/facebook.svg' %}" alt="Facebook" class="h-6 w-6">
+            </a>
+            <a href="#" class="block" aria-label="Instagram">
+              <img src="{% static 'images/resources/social/instagram.svg' %}" alt="Instagram" class="h-6 w-6">
+            </a>
+            <!-- placeholders for other social icons -->
+            <a href="#" class="block text-gray-300 hover:text-white" aria-label="Twitter">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557a9.83 9.83 0 0 1-2.828.775A4.932 4.932 0 0 0 23.337 3a9.864 9.864 0 0 1-3.127 1.195 4.916 4.916 0 0 0-8.38 4.482A13.944 13.944 0 0 1 1.671 3.149 4.916 4.916 0 0 0 3.195 9.723 4.9 4.9 0 0 1 .964 9v.062a4.916 4.916 0 0 0 3.941 4.817 4.902 4.902 0 0 1-2.212.084 4.918 4.918 0 0 0 4.588 3.417A9.868 9.868 0 0 1 0 19.54a13.94 13.94 0 0 0 7.548 2.212c9.056 0 14.01-7.506 14.01-14.01 0-.213-.005-.425-.014-.636A10.012 10.012 0 0 0 24 4.557z"/></svg>
+            </a>
+          </div>
+          <p class="text-sm text-gray-400 mt-4">123 Ocean Drive, Oghara, Delta State<br>PO Box 12345</p>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 w-full">
+        <div class="w-full px-6 py-4 text-xs text-gray-500 flex flex-col md:flex-row justify-between items-center">
+          <div>Privacy Policy · Terms of Use · Cookies</div>
+          <div class="mt-2 md:mt-0">Designed & Built with care</div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Facility image sliders
+      const facilities = [
+        { name: 'casino', images: 2 },
+        { name: 'event', images: 2 },
+        { name: 'nightclub', images: 2 },
+        { name: 'pool', images: 18 },
+        { name: 'sports', images: 4 },
+        { name: 'wine', images: 2 }
+      ];
+
+      facilities.forEach(facility => {
+        let currentIdx = 0;
+        const totalImages = facility.images;
+        const prevBtn = document.querySelector(`.facility-${facility.name}-prev`);
+        const nextBtn = document.querySelector(`.facility-${facility.name}-next`);
+
+        if (prevBtn) {
+          prevBtn.addEventListener('click', function() {
+            currentIdx = (currentIdx - 1 + totalImages) % totalImages;
+            updateSlide();
+          });
+        }
+
+        if (nextBtn) {
+          nextBtn.addEventListener('click', function() {
+            currentIdx = (currentIdx + 1) % totalImages;
+            updateSlide();
+          });
+        }
+
+        function updateSlide() {
+          const img = prevBtn?.parentElement?.querySelector('.facility-slide');
+          if (img) {
+            const folder = facility.name === 'casino' ? 'casino' :
+                          facility.name === 'event' ? 'event-center' :
+                          facility.name === 'nightclub' ? 'night-club' :
+                          facility.name === 'pool' ? 'pool-bar' :
+                          facility.name === 'sports' ? 'sports-bar' : 'wine-bar';
+            img.src = `{% static 'images/resources/facilities/' %}${folder}/${currentIdx + 1}.jpg`;
+          }
+        }
+      });
+
+      // Scroll fade effect
+      const container = document.querySelector('.facilities-container');
+      if (container) {
+        window.addEventListener('scroll', function() {
+          const containerRect = container.getBoundingClientRect();
+          const containerTop = containerRect.top;
+          const containerBottom = containerRect.bottom;
+          const windowHeight = window.innerHeight;
+
+          // Fade top when scrolling up (content above becomes transparent)
+          if (containerTop < windowHeight && containerTop > 0) {
+            const fadeStrength = Math.min(1, containerTop / windowHeight);
+            container.style.maskImage = `linear-gradient(to bottom, rgba(0,0,0,${fadeStrength}), rgba(0,0,0,1))`;
+            container.style.webkitMaskImage = `linear-gradient(to bottom, rgba(0,0,0,${fadeStrength}), rgba(0,0,0,1))`;
+          }
+          // Fade bottom when scrolling down (content below becomes transparent)
+          else if (containerBottom > 0 && containerBottom < windowHeight) {
+            const fadeStrength = Math.min(1, containerBottom / windowHeight);
+            container.style.maskImage = `linear-gradient(to top, rgba(0,0,0,${fadeStrength}), rgba(0,0,0,1))`;
+            container.style.webkitMaskImage = `linear-gradient(to top, rgba(0,0,0,${fadeStrength}), rgba(0,0,0,1))`;
+          }
+          // Normal state when fully visible
+          else if (containerTop <= 0 && containerBottom >= windowHeight) {
+            container.style.maskImage = 'none';
+            container.style.webkitMaskImage = 'none';
+          }
+        });
+      }
+    </script>
+
+  </body>
+</html>

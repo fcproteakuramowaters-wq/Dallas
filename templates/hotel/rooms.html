@@ -1,0 +1,586 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rooms - Dallas Grand Beach Hotel</title>
+    <link rel="icon" href="{% static 'images/resources/logo.png' %}" type="image/png">
+  <script src="https://cdn.tailwindcss.com" defer></script>
+  <meta name="description" content="Browse our luxurious rooms at Dallas Grand Beach Hotel. Choose from Deluxe, Suite, or Family rooms with beachfront views and premium amenities.">
+  <meta name="robots" content="index,follow">
+  <meta property="og:title" content="Rooms — Dallas Grand Beach Hotel">
+  <meta property="og:description" content="Find the perfect room for your stay — beachfront suites, deluxe rooms and family options with premium services.">
+  {% if request %}<link rel="canonical" href="{{ request.build_absolute_uri }}" />{% endif %}
+    <style>
+      .modal-hidden {
+        display: none;
+      }
+      .modal-visible {
+        display: block;
+      }
+
+      /* Zoom effect for room images */
+      .room-img {
+        transition: transform 0.4s cubic-bezier(.4,2,.3,1), box-shadow 0.3s;
+        cursor: pointer;
+      }
+      .room-img.zoom-hover {
+        transform: scale(1.13);
+        z-index: 2;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      }
+      .room-img.zoomed-out {
+        transform: scale(1);
+        z-index: 1;
+        box-shadow: none;
+      }
+
+      @keyframes fadeInOut {
+        0% { opacity: 0; }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { opacity: 0; }
+      }
+      .fade-animation { animation: fadeInOut 6s ease-in-out infinite; }
+
+      /* Inline detail panel animations and overlay styles */
+      @keyframes zoomOut {
+        0% { transform: scale(0.82); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+      @keyframes zoomInHide {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(0.9); opacity: 0; }
+      }
+
+      /* Panel is an overlay centered on screen with a backdrop */
+      .detail-panel {
+        position: fixed;
+        inset: 0;
+        display: none; /* hidden by default */
+        align-items: center;
+        justify-content: center;
+        background: rgba(0,0,0,0.45);
+        z-index: 50;
+        padding: 1rem;
+      }
+
+      .detail-panel.active { display: flex; }
+      .detail-panel.hide { display: flex; }
+
+      /* Card is reduced in size compared to full-width inline panel */
+      .detail-card {
+        width: 100%;
+        max-width: 900px; /* reduced width */
+        height: 80vh; /* use full height */
+        overflow: visible; /* content scroll handled on the content column */
+        transform-origin: center center;
+        border-radius: 0.5rem;
+        animation-fill-mode: forwards;
+      }
+
+      /* inner layout helpers: keep image fixed height and make content scrollable */
+      .detail-inner { display: flex; height: 100%; }
+      .detail-image-col { width: 33.333%; flex: 0 0 33.333%; height: 100%; }
+      .detail-image-col img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .detail-content { width: 66.666%; height: 100%; display: flex; flex-direction: column; overflow: auto; }
+
+      .detail-panel.active .detail-card { animation: zoomOut 260ms cubic-bezier(.2,.9,.2,1) forwards; }
+      .detail-panel.hide .detail-card { animation: zoomInHide 180ms ease forwards; }
+
+    </style>
+  </head>
+  <body class="antialiased text-gray-900 min-h-screen flex flex-col m-0 bg-gray-50">
+
+    <!-- Navbar -->
+    <header class="w-full bg-gray-800 shadow">
+      <nav class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <a href="{% url 'home' %}">
+            <img src="{% static 'images/resources/logo.png' %}" alt="Site logo" class="h-12 w-auto object-contain">
+          </a>
+        </div>
+
+        <ul class="hidden md:flex items-center gap-6 text-white font-medium">
+          <li><a href="{% url 'home' %}" class="text-white hover:text-blue-400 transition-colors">Home</a></li>
+          <li><a href="{% url 'rooms' %}" class="text-white hover:text-blue-400 transition-colors">Rooms</a></li>
+          <li><a href="{% url 'facilities' %}" class="text-white hover:text-blue-400 transition-colors">Facilities</a></li>
+          <li><a href="{% url 'reviews' %}" class="text-white hover:text-blue-400 transition-colors">Reviews</a></li>
+          <li><a href="{% url 'contact' %}" class="text-white hover:text-blue-400 transition-colors">Contact & Support</a></li>
+        </ul>
+
+        <!-- Mobile menu button -->
+        <div class="md:hidden">
+          <button id="mobile-menu-btn" aria-label="open menu" class="text-white text-2xl">☰</button>
+        </div>
+      </nav>
+      
+      <!-- Mobile menu (hidden by default, shown when button clicked) -->
+      <div id="mobile-menu" class="hidden md:hidden bg-gray-800 bg-opacity-95 shadow-lg">
+        <ul class="flex flex-col items-start gap-0 px-6 py-4 text-white font-medium">
+          <li class="w-full py-2 border-b border-gray-700"><a href="{% url 'home' %}" class="text-white hover:text-blue-400 transition-colors block">Home</a></li>
+          <li class="w-full py-2 border-b border-gray-700"><a href="{% url 'rooms' %}" class="text-white hover:text-blue-400 transition-colors block">Rooms</a></li>
+          <li class="w-full py-2 border-b border-gray-700"><a href="{% url 'facilities' %}" class="text-white hover:text-blue-400 transition-colors block">Facilities</a></li>
+          <li class="w-full py-2 border-b border-gray-700"><a href="{% url 'reviews' %}" class="text-white hover:text-blue-400 transition-colors block">Reviews</a></li>
+          <li class="w-full py-2"><a href="{% url 'contact' %}" class="text-white hover:text-blue-400 transition-colors block">Contact & Support</a></li>
+        </ul>
+      </div>
+    </header>
+    
+    <script>
+      // Mobile menu toggle
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      
+      if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', function() {
+          mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Close menu when a link is clicked
+        mobileMenu.querySelectorAll('a').forEach(link => {
+          link.addEventListener('click', function() {
+            mobileMenu.classList.add('hidden');
+          });
+        });
+      }
+    </script>
+
+    <main class="flex-grow">
+      <!-- Page Header -->
+      <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+          <h1 class="text-5xl font-bold mb-4 fade-animation">Our Luxury Rooms</h1>
+          <p class="text-blue-100 text-lg fade-animation">Experience comfort and elegance at Dallas Grand Beach Hotel</p>
+        </div>
+      </div>
+
+      <!-- Rooms Grid -->
+      <div class="max-w-7xl mx-auto px-6 py-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+
+          <!-- Deluxe Room -->
+          <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300">
+            <div class="relative h-64 bg-gray-200 overflow-hidden">
+              <img src="{% static 'images/resources/rooms/9.jpg' %}" alt="Deluxe Room" class="w-full h-full object-cover room-img" onmouseenter="zoomInImage(this)" onmouseleave="zoomOutImage(this)" tabindex="0">
+              <div class="absolute top-0 left-0 bg-blue-600 text-white px-4 py-2 text-sm font-semibold">Deluxe Room</div>
+            </div>
+            <div class="p-6 flex flex-col">
+              <h3 class="text-2xl font-bold text-gray-800 mb-3">Deluxe Room</h3>
+              <p class="text-gray-600 text-sm mb-4">Experience comfort in our spacious deluxe room with premium amenities.</p>
+              
+              <!-- Rate in Naira -->
+              <div class="mb-4 flex items-baseline gap-1">
+                <span class="text-3xl font-bold text-blue-600">₦25,000</span>
+                <span class="text-gray-500 text-sm">per night</span>
+              </div>
+
+              <!-- Icons Row -->
+              <div class="flex gap-4 mb-4 justify-center">
+                <div class="flex flex-col items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.251a.75.75 0 01.75-.75h6.278a.75.75 0 01.75.75v5.25H8.111v-5.25z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v8m-4-4h8M5 10V7a2 2 0 012-2h10a2 2 0 012 2v3" />
+                  </svg>
+                  <span class="text-xs text-gray-600">WiFi</span>
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="text-xs text-gray-600">Room Service</span>
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span class="text-xs text-gray-600">Housekeeping</span>
+                </div>
+              </div>
+
+              <!-- View Details & Book Now Buttons -->
+              <div class="mt-auto flex gap-3 justify-center">
+                <button type="button" onclick="showRoomDetails('deluxe')" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                  View Details
+                </button>
+                <button class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                  Book Now
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Executive Deluxe -->
+          <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300">
+            <div class="relative h-64 bg-gray-200 overflow-hidden">
+              <img src="{% static 'images/resources/rooms/8.jpg' %}" alt="Executive Deluxe" class="w-full h-full object-cover room-img" onmouseenter="zoomInImage(this)" onmouseleave="zoomOutImage(this)" tabindex="0">
+              <div class="absolute top-0 left-0 bg-amber-600 text-white px-4 py-2 text-sm font-semibold">Executive Deluxe</div>
+            </div>
+            <div class="p-6 flex flex-col">
+              <h3 class="text-2xl font-bold text-gray-800 mb-3">Executive Deluxe</h3>
+              <p class="text-gray-600 text-sm mb-4">Elevated luxury with premium features and exclusive benefits.</p>
+              
+              <div class="mb-4 flex items-baseline gap-1">
+                <span class="text-3xl font-bold text-amber-600">₦35,000</span>
+                <span class="text-gray-500 text-sm">per night</span>
+              </div>
+
+              <div class="flex gap-4 mb-4 justify-center">
+                <div class="flex flex-col items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.251a.75.75 0 01.75-.75h6.278a.75.75 0 01.75.75v5.25H8.111v-5.25z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v8m-4-4h8M5 10V7a2 2 0 012-2h10a2 2 0 012 2v3" />
+                  </svg>
+                  <span class="text-xs text-gray-600">WiFi</span>
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="text-xs text-gray-600">Room Service</span>
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span class="text-xs text-gray-600">Housekeeping</span>
+                </div>
+              </div>
+
+              <!-- View Details & Book Now Buttons -->
+              <div class="mt-auto flex gap-3 justify-center">
+                <button type="button" onclick="showRoomDetails('executive')" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                  View Details
+                </button>
+                <button class="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                  Book Now
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Super Executive Deluxe -->
+          <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300">
+            <div class="relative h-64 bg-gray-200 overflow-hidden">
+              <img src="{% static 'images/resources/rooms/6.jpg' %}" alt="Super Executive Deluxe" class="w-full h-full object-cover room-img" onmouseenter="zoomInImage(this)" onmouseleave="zoomOutImage(this)" tabindex="0">
+              <div class="absolute top-0 left-0 bg-purple-600 text-white px-4 py-2 text-sm font-semibold">Super Executive</div>
+            </div>
+            <div class="p-6 flex flex-col">
+              <h3 class="text-2xl font-bold text-gray-800 mb-3">Super Executive Deluxe</h3>
+              <p class="text-gray-600 text-sm mb-4">The pinnacle of luxury with exclusive amenities and services.</p>
+              
+              <div class="mb-4 flex items-baseline gap-1">
+                <span class="text-3xl font-bold text-purple-600">₦45,000</span>
+                <span class="text-gray-500 text-sm">per night</span>
+              </div>
+
+              <div class="flex gap-4 mb-4 justify-center">
+                <div class="flex flex-col items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.251a.75.75 0 01.75-.75h6.278a.75.75 0 01.75.75v5.25H8.111v-5.25z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v8m-4-4h8M5 10V7a2 2 0 012-2h10a2 2 0 012 2v3" />
+                  </svg>
+                  <span class="text-xs text-gray-600">WiFi</span>
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="text-xs text-gray-600">Room Service</span>
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span class="text-xs text-gray-600">Housekeeping</span>
+                </div>
+              </div>
+
+              <!-- View Details & Book Now Buttons -->
+              <div class="mt-auto flex gap-3 justify-center">
+                <button type="button" onclick="showRoomDetails('super')" class="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                  View Details
+                </button>
+                <button class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                  Book Now
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Executive Suite -->
+          <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300">
+            <div class="relative h-64 bg-gray-200 overflow-hidden">
+              <img src="{% static 'images/resources/rooms/5.jpg' %}" alt="Executive Suite" class="w-full h-full object-cover room-img" onmouseenter="zoomInImage(this)" onmouseleave="zoomOutImage(this)" tabindex="0">
+              <div class="absolute top-0 left-0 bg-red-600 text-white px-4 py-2 text-sm font-semibold">Executive Suite</div>
+            </div>
+            <div class="p-6 flex flex-col">
+              <h3 class="text-2xl font-bold text-gray-800 mb-3">Executive Suite</h3>
+              <p class="text-gray-600 text-sm mb-4">The ultimate luxury experience with premium suites and services.</p>
+              
+              <div class="mb-4 flex items-baseline gap-1">
+                <span class="text-3xl font-bold text-red-600">₦60,000</span>
+                <span class="text-gray-500 text-sm">per night</span>
+              </div>
+
+              <div class="flex gap-4 mb-4 justify-center">
+                <div class="flex flex-col items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.251a.75.75 0 01.75-.75h6.278a.75.75 0 01.75.75v5.25H8.111v-5.25z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v8m-4-4h8M5 10V7a2 2 0 012-2h10a2 2 0 012 2v3" />
+                  </svg>
+                  <span class="text-xs text-gray-600">WiFi</span>
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="text-xs text-gray-600">Room Service</span>
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span class="text-xs text-gray-600">Housekeeping</span>
+                </div>
+              </div>
+
+              <!-- View Details & Book Now Buttons -->
+              <div class="mt-auto flex gap-3 justify-center">
+                <button type="button" onclick="showRoomDetails('suite')" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                  View Details
+                </button>
+                <button class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                  Book Now
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    <!-- Inline Room Details Panel (overlay) -->
+    <div id="roomDetailPanel" class="hidden detail-panel" aria-hidden="true">
+      <div class="detail-card bg-white rounded-lg shadow-lg overflow-hidden transform transition-transform duration-300">
+        <div class="detail-inner md:flex">
+          <!-- Image column -->
+          <div class="detail-image-col md:w-1/3 bg-gray-100 min-h-56">
+            <img id="detailImage" src="" alt="Room image" class="w-full h-full object-cover">
+          </div>
+
+          <!-- Content column -->
+          <div class="detail-content md:w-2/3 p-6 overflow-auto">
+            <div class="flex justify-between items-start mb-4">
+              <h2 id="detailTitle" class="text-2xl font-bold text-gray-800"></h2>
+              <button type="button" onclick="hideRoomDetails(); return false;" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">✕</button>
+            </div>
+            <div id="detailContent" class="text-gray-700 text-sm space-y-4"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-200 mt-auto w-full">
+      <div class="w-full px-6 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <a href="#" class="inline-block mb-4">
+            <img src="{% static 'images/resources/logo.png' %}" alt="Dallas Grand Beach Hotel" class="h-12 w-auto object-contain">
+          </a>
+          <p class="text-sm text-gray-300">Dallas Grand Beach Hotel & Resort Suite<br>Oghara, Delta State</p>
+          <p class="mt-4 text-sm text-gray-400">© 2025 Dallas Grand Beach Hotel. All rights reserved.</p>
+        </div>
+
+        <div>
+          <h4 class="text-lg font-semibold mb-3">Quick Links</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="{% url 'home' %}" class="hover:text-white">Home</a></li>
+            <li><a href="{% url 'rooms' %}" class="hover:text-white">Rooms</a></li>
+            <li><a href="{% url 'facilities' %}" class="hover:text-white">Facilities</a></li>
+            <li><a href="{% url 'reviews' %}" class="hover:text-white">Reviews</a></li>
+            <li><a href="{% url 'contact' %}" class="hover:text-white">Contact & Support</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-lg font-semibold mb-3">Contact</h4>
+          <p class="text-sm text-gray-300">Phone: <a href="tel:+1234567890" class="hover:text-white">+1 (234) 567-890</a></p>
+          <p class="text-sm text-gray-300">Email: <a href="mailto:info@dallasgrandbeach.com" class="hover:text-white">info@dallasgrandbeach.com</a></p>
+          <p class="text-sm text-gray-300 mt-2">Reception: <span class="text-sm">Open 24/7</span></p>
+        </div>
+
+        <div>
+          <h4 class="text-lg font-semibold mb-3">Follow Us</h4>
+          <div class="flex items-center gap-4">
+            <a href="#" class="block" aria-label="Facebook">
+              <img src="{% static 'images/resources/social/facebook.svg' %}" alt="Facebook" class="h-6 w-6">
+            </a>
+            <a href="#" class="block" aria-label="Instagram">
+              <img src="{% static 'images/resources/social/instagram.svg' %}" alt="Instagram" class="h-6 w-6">
+            </a>
+            <a href="#" class="block text-gray-300 hover:text-white" aria-label="Twitter">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557a9.83 9.83 0 0 1-2.828.775A4.932 4.932 0 0 0 23.337 3a9.864 9.864 0 0 1-3.127 1.195 4.916 4.916 0 0 0-8.38 4.482A13.944 13.944 0 0 1 1.671 3.149 4.916 4.916 0 0 0 3.195 9.723 4.9 4.9 0 0 1 .964 9v.062a4.916 4.916 0 0 0 3.941 4.817 4.902 4.902 0 0 1-2.212.084 4.918 4.918 0 0 0 4.588 3.417A9.868 9.868 0 0 1 0 19.54a13.94 13.94 0 0 0 7.548 2.212c9.056 0 14.01-7.506 14.01-14.01 0-.213-.005-.425-.014-.636A10.012 10.012 0 0 0 24 4.557z"/></svg>
+            </a>
+          </div>
+          <p class="text-sm text-gray-400 mt-4">123 Ocean Drive, Oghara, Delta State<br>PO Box 12345</p>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 w-full">
+        <div class="w-full px-6 py-4 text-xs text-gray-500 flex flex-col md:flex-row justify-between items-center">
+          <div>Privacy Policy · Terms of Use · Cookies</div>
+          <div class="mt-2 md:mt-0">Designed & Built with care</div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Room image zoom in/out handlers
+      function zoomInImage(img) {
+        if (!img.classList.contains('zoomed-out')) {
+          img.classList.add('zoom-hover');
+        }
+      }
+      function zoomOutImage(img) {
+        img.classList.remove('zoom-hover');
+        img.classList.remove('zoomed-out');
+      }
+      // On click, toggle zoomed-out state
+      document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.room-img').forEach(function(img) {
+          img.addEventListener('click', function(e) {
+            if (img.classList.contains('zoom-hover')) {
+              img.classList.remove('zoom-hover');
+              img.classList.add('zoomed-out');
+            } else {
+              img.classList.add('zoom-hover');
+              img.classList.remove('zoomed-out');
+            }
+          });
+        });
+      });
+      const roomDetails = {
+      deluxe: {
+        title: 'Deluxe Room - ₦25,000/night',
+        image: '{% static "images/resources/rooms/9.jpg" %}',
+        html: `
+            <h3 class="text-lg font-semibold">Room Overview</h3>
+            <p>Adults only</p>
+
+            <h3 class="text-lg font-semibold mt-4">Special Benefits</h3>
+            <ul class="list-disc list-inside">
+              <li>Open: 24 hours, 7 days a week</li>
+              <li>Closed: other</li>
+              <li>High-speed Wi-Fi</li>
+              <li>Dedicated outdoor space</li>
+              <li>Expanded a la carte menu, for purchase</li>
+              <li>Evening bar service</li>
+            </ul>
+
+            <h3 class="text-lg font-semibold mt-4">Beds and Bedding</h3>
+            <ul class="list-disc list-inside">
+              <li>Maximum occupancy: 2</li>
+              <li>Rollaway beds not permitted</li>
+              <li>Cribs not permitted</li>
+            </ul>
+
+            <h3 class="text-lg font-semibold mt-4">Room Features</h3>
+            <ul class="list-disc list-inside">
+              <li>18sqm / 194sqft</li>
+              <li>This room is non-smoking</li>
+              <li>Windows may be opened</li>
+              <li>Windows, soundproof</li>
+            </ul>
+
+            <h3 class="text-lg font-semibold mt-4">Bath and Bathroom Features</h3>
+            <h3 class="text-lg font-semibold mt-4">Furniture and Furnishings</h3>
+            <ul class="list-disc list-inside">
+              <li>Safe, in room</li>
+              <li>Desk, writing/work, with ergonomic chair</li>
+            </ul>
+
+            <h3 class="text-lg font-semibold mt-4">Food & Beverages</h3>
+            <ul class="list-disc list-inside">
+              <li>Bottled water, complimentary</li>
+            </ul>
+
+            <h3 class="text-lg font-semibold mt-4">Kitchen Features</h3>
+            <h3 class="text-lg font-semibold mt-4">Internet and Phones</h3>
+            <ul class="list-disc list-inside">
+              <li>Phones: 1</li>
+              <li>Wireless internet, complimentary</li>
+            </ul>
+
+            <h3 class="text-lg font-semibold mt-4">Hospitality Services</h3>
+            <ul class="list-disc list-inside">
+              <li>Evening turndown service</li>
+              <li>Butler service</li>
+            </ul>
+
+            <h3 class="text-lg font-semibold mt-4">Entertainment</h3>
+            <ul class="list-disc list-inside">
+              <li>Premium movie channels</li>
+              <li>Cable/satellite</li>
+              <li>CNN</li>
+            </ul>
+
+            <h3 class="text-lg font-semibold mt-4">Accessible Room Features</h3>
+            <p>This room type does not offer mobility accessible rooms</p>
+            <p>This room type does not offer accessible rooms with roll-in showers</p>
+            <p>This room type does not offer hearing accessible rooms</p>
+          `
+        },
+        executive: { title: 'Executive Deluxe - ₦35,000/night', image: '{% static "images/resources/rooms/8.jpg" %}', html: '' },
+        super: { title: 'Super Executive Deluxe - ₦45,000/night', image: '{% static "images/resources/rooms/6.jpg" %}', html: '' },
+        suite: { title: 'Executive Suite - ₦60,000/night', image: '{% static "images/resources/rooms/5.jpg" %}', html: '' }
+      };
+
+      // If other room types need unique content, fill roomDetails.executive/html etc. For now they will reuse deluxe details when empty.
+
+      function showRoomDetails(roomType) {
+        const panel = document.getElementById('roomDetailPanel');
+        const titleEl = document.getElementById('detailTitle');
+        const contentEl = document.getElementById('detailContent');
+        const data = roomDetails[roomType] || roomDetails.deluxe;
+
+        titleEl.textContent = data.title;
+        contentEl.innerHTML = data.html || roomDetails.deluxe.html;
+        // set image
+        const imgEl = document.getElementById('detailImage');
+        if (imgEl) {
+          imgEl.src = data.image || roomDetails.deluxe.image;
+          imgEl.alt = data.title || 'Room image';
+        }
+
+        // show panel as centered overlay and trigger grow (zoom-out) animation
+        panel.classList.remove('hidden');
+        panel.classList.remove('hide');
+        // force reflow then add active to trigger animation
+        void panel.offsetWidth;
+        panel.classList.add('active');
+
+        // close when clicking on the backdrop (only set once)
+        panel.onclick = function(e) {
+          if (e.target === panel) {
+            hideRoomDetails();
+          }
+        };
+      }
+
+      function hideRoomDetails() {
+        const panel = document.getElementById('roomDetailPanel');
+        // trigger hide animation then add hidden when animation completes
+        panel.classList.remove('active');
+        panel.classList.add('hide');
+        panel.addEventListener('animationend', function handler() {
+          panel.classList.add('hidden');
+          panel.classList.remove('hide');
+          panel.removeEventListener('animationend', handler);
+        });
+      }
+    </script>
+
+  </body>
+</html>

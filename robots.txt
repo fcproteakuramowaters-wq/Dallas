@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Sitemap: /sitemap.xml
+# For Render deployments, ensure static files are served from STATIC_ROOT (collectstatic) and path is reachable.

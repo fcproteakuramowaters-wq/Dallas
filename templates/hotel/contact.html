@@ -1,0 +1,288 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Contact & Support - Dallas Grand Beach Hotel</title>
+    <link rel="icon" href="{% static 'images/resources/logo.png' %}" type="image/png">
+  <!-- Tailwind Play CDN for quick styling -->
+  <script src="https://cdn.tailwindcss.com" defer></script>
+  <meta name="description" content="Contact Dallas Grand Beach Hotel — get in touch for reservations, events, or general support. We're available 24/7.">
+  <meta name="robots" content="index,follow">
+  <meta property="og:site_name" content="Dallas Grand Beach Hotel">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Contact & Support — Dallas Grand Beach Hotel">
+  <meta property="og:description" content="Contact Dallas Grand Beach Hotel for reservations, events, and support. Reach us by phone, email, or using our contact form.">
+  {% if request %}<link rel="canonical" href="{{ request.build_absolute_uri }}" />{% endif %}
+    <style>
+      body {
+        background-color: #f8f7ff;
+      }
+    </style>
+  </head>
+  <body class="antialiased text-gray-900 min-h-screen flex flex-col m-0">
+
+    <!-- Navbar (same as home.html) -->
+    <header class="w-full bg-gray-800 shadow">
+      <nav class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <a href="{% url 'home' %}">
+            <img src="{% static 'images/resources/logo.png' %}" alt="Site logo" class="h-12 w-auto object-contain">
+          </a>
+        </div>
+
+        <ul class="hidden md:flex items-center gap-6 text-white font-medium">
+          <li><a href="{% url 'home' %}" class="text-white hover:text-blue-400 transition-colors">Home</a></li>
+          <li><a href="{% url 'rooms' %}" class="text-white hover:text-blue-400 transition-colors">Rooms</a></li>
+          <li><a href="{% url 'facilities' %}" class="text-white hover:text-blue-400 transition-colors">Facilities</a></li>
+          <li><a href="{% url 'reviews' %}" class="text-white hover:text-blue-400 transition-colors">Reviews</a></li>
+          <li><a href="{% url 'contact' %}" class="text-white hover:text-blue-400 transition-colors">Contact & Support</a></li>
+        </ul>
+
+        <!-- Mobile menu button -->
+        <div class="md:hidden">
+          <button id="mobile-menu-btn" aria-label="open menu" class="text-white text-2xl">☰</button>
+        </div>
+      </nav>
+      
+      <!-- Mobile menu (hidden by default, shown when button clicked) -->
+      <div id="mobile-menu" class="hidden md:hidden bg-gray-800 bg-opacity-95 shadow-lg">
+        <ul class="flex flex-col items-start gap-0 px-6 py-4 text-white font-medium">
+          <li class="w-full py-2 border-b border-gray-700"><a href="{% url 'home' %}" class="text-white hover:text-blue-400 transition-colors block">Home</a></li>
+          <li class="w-full py-2 border-b border-gray-700"><a href="{% url 'rooms' %}" class="text-white hover:text-blue-400 transition-colors block">Rooms</a></li>
+          <li class="w-full py-2 border-b border-gray-700"><a href="{% url 'facilities' %}" class="text-white hover:text-blue-400 transition-colors block">Facilities</a></li>
+          <li class="w-full py-2 border-b border-gray-700"><a href="{% url 'reviews' %}" class="text-white hover:text-blue-400 transition-colors block">Reviews</a></li>
+          <li class="w-full py-2"><a href="{% url 'contact' %}" class="text-white hover:text-blue-400 transition-colors block">Contact & Support</a></li>
+        </ul>
+      </div>
+    </header>
+    
+    <script>
+      // Mobile menu toggle
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      
+      if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', function() {
+          mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Close menu when a link is clicked
+        mobileMenu.querySelectorAll('a').forEach(link => {
+          link.addEventListener('click', function() {
+            mobileMenu.classList.add('hidden');
+          });
+        });
+      }
+    </script>
+
+    <main class="flex-grow py-16">
+      <!-- Page Title -->
+      <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-gray-800">Contact & Support</h1>
+        <p class="text-gray-600 mt-2">We're here to help. Reach out to us anytime.</p>
+      </div>
+
+      <!-- Contact Container (40% info + 60% form) -->
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="flex flex-col md:flex-row gap-0 bg-white rounded-lg shadow-lg overflow-hidden">
+
+          <!-- 40% Contact Information (Formal Green Background) -->
+          <div class="md:w-2/5 bg-green-700 text-white p-8">
+            <h2 class="text-2xl font-semibold mb-6">Get In Touch</h2>
+
+            <!-- Address -->
+            <div class="mb-6">
+              <h3 class="text-lg font-semibold mb-2">Address</h3>
+              <p class="text-green-100">
+                123 Ocean Drive<br>
+                Oghara, Delta State<br>
+                Nigeria
+              </p>
+            </div>
+
+            <!-- Phone -->
+            <div class="mb-6">
+              <h3 class="text-lg font-semibold mb-2">Phone</h3>
+              <p class="text-green-100">
+                <a href="tel:+1234567890" class="hover:text-white transition-colors">+1 (234) 567-890</a><br>
+                <span class="text-sm">Available 24/7</span>
+              </p>
+            </div>
+
+            <!-- Email -->
+            <div class="mb-6">
+              <h3 class="text-lg font-semibold mb-2">Email</h3>
+              <p class="text-green-100">
+                <a href="mailto:info@dallasgrandbeach.com" class="hover:text-white transition-colors">info@dallasgrandbeach.com</a><br>
+                <a href="mailto:support@dallasgrandbeach.com" class="hover:text-white transition-colors">support@dallasgrandbeach.com</a>
+              </p>
+            </div>
+
+            <!-- Website -->
+            <div class="mb-6">
+              <h3 class="text-lg font-semibold mb-2">Website</h3>
+              <p class="text-green-100">
+                <a href="#" class="hover:text-white transition-colors">www.dallasgrandbeach.com</a>
+              </p>
+            </div>
+
+            <!-- Office Hours -->
+            <div>
+              <h3 class="text-lg font-semibold mb-2">Office Hours</h3>
+              <p class="text-green-100">
+                Monday - Friday: 8:00 AM - 6:00 PM<br>
+                Saturday: 10:00 AM - 4:00 PM<br>
+                Sunday: Closed
+              </p>
+            </div>
+          </div>
+
+          <!-- 60% Contact Form -->
+          <div class="md:w-3/5 p-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Send Us a Message</h2>
+
+            <form class="space-y-4">
+
+              <!-- Full Name -->
+              <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input 
+                  type="text" 
+                  id="name" 
+                  name="name" 
+                  placeholder="Your full name" 
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+              </div>
+
+              <!-- Email -->
+              <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <input 
+                  type="email" 
+                  id="email" 
+                  name="email" 
+                  placeholder="your.email@example.com" 
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+              </div>
+
+              <!-- Phone -->
+              <div>
+                <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <input 
+                  type="tel" 
+                  id="phone" 
+                  name="phone" 
+                  placeholder="+1 (234) 567-890" 
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+              </div>
+
+              <!-- Subject -->
+              <div>
+                <label for="subject" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                <select 
+                  id="subject" 
+                  name="subject" 
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="">Select a subject</option>
+                  <option value="reservation">Reservation Inquiry</option>
+                  <option value="feedback">Feedback</option>
+                  <option value="complaints">Complaints</option>
+                  <option value="events">Events & Groups</option>
+                  <option value="partnership">Partnership</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <!-- Message -->
+              <div>
+                <label for="message" class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                <textarea 
+                  id="message" 
+                  name="message" 
+                  rows="5" 
+                  placeholder="Please share your message or inquiry..." 
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                ></textarea>
+              </div>
+
+              <!-- Submit Button -->
+              <button 
+                type="submit" 
+                class="w-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-semibold px-6 py-3 rounded-lg shadow-lg transition-colors"
+              >
+                Send Message
+              </button>
+
+            </form>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Footer (same as home.html) -->
+    <footer class="bg-gray-900 text-gray-200 mt-auto w-full">
+      <div class="w-full px-6 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <a href="#" class="inline-block mb-4">
+            <img src="{% static 'images/resources/logo.png' %}" alt="Dallas Grand Beach Hotel" class="h-12 w-auto object-contain">
+          </a>
+          <p class="text-sm text-gray-300">Dallas Grand Beach Hotel & Resort Suite<br>Oghara, Delta State</p>
+          <p class="mt-4 text-sm text-gray-400">© 2025 Dallas Grand Beach Hotel. All rights reserved.</p>
+        </div>
+
+        <div>
+          <h4 class="text-lg font-semibold mb-3">Quick Links</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="{% url 'home' %}" class="hover:text-white">Home</a></li>
+            <li><a href="{% url 'rooms' %}" class="hover:text-white">Rooms</a></li>
+            <li><a href="{% url 'facilities' %}" class="hover:text-white">Facilities</a></li>
+            <li><a href="{% url 'reviews' %}" class="hover:text-white">Reviews</a></li>
+            <li><a href="{% url 'contact' %}" class="hover:text-white">Contact & Support</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-lg font-semibold mb-3">Contact</h4>
+          <p class="text-sm text-gray-300">Phone: <a href="tel:+1234567890" class="hover:text-white">+1 (234) 567-890</a></p>
+          <p class="text-sm text-gray-300">Email: <a href="mailto:info@dallasgrandbeach.com" class="hover:text-white">info@dallasgrandbeach.com</a></p>
+          <p class="text-sm text-gray-300 mt-2">Reception: <span class="text-sm">Open 24/7</span></p>
+        </div>
+
+        <div>
+          <h4 class="text-lg font-semibold mb-3">Follow Us</h4>
+          <div class="flex items-center gap-4">
+            <a href="#" class="block" aria-label="Facebook">
+              <img src="{% static 'images/resources/social/facebook.svg' %}" alt="Facebook" class="h-6 w-6">
+            </a>
+            <a href="#" class="block" aria-label="Instagram">
+              <img src="{% static 'images/resources/social/instagram.svg' %}" alt="Instagram" class="h-6 w-6">
+            </a>
+            <a href="#" class="block text-gray-300 hover:text-white" aria-label="Twitter">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557a9.83 9.83 0 0 1-2.828.775A4.932 4.932 0 0 0 23.337 3a9.864 9.864 0 0 1-3.127 1.195 4.916 4.916 0 0 0-8.38 4.482A13.944 13.944 0 0 1 1.671 3.149 4.916 4.916 0 0 0 3.195 9.723 4.9 4.9 0 0 1 .964 9v.062a4.916 4.916 0 0 0 3.941 4.817 4.902 4.902 0 0 1-2.212.084 4.918 4.918 0 0 0 4.588 3.417A9.868 9.868 0 0 1 0 19.54a13.94 13.94 0 0 0 7.548 2.212c9.056 0 14.01-7.506 14.01-14.01 0-.213-.005-.425-.014-.636A10.012 10.012 0 0 0 24 4.557z"/></svg>
+            </a>
+          </div>
+          <p class="text-sm text-gray-400 mt-4">123 Ocean Drive, Oghara, Delta State<br>PO Box 12345</p>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 w-full">
+        <div class="w-full px-6 py-4 text-xs text-gray-500 flex flex-col md:flex-row justify-between items-center">
+          <div>Privacy Policy · Terms of Use · Cookies</div>
+          <div class="mt-2 md:mt-0">Designed & Built with care</div>
+        </div>
+      </div>
+    </footer>
+
+  </body>
+</html>

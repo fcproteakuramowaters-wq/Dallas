@@ -1,0 +1,289 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Reviews - Dallas Grand Beach Hotel</title>
+    <link rel="icon" href="{% static 'images/resources/logo.png' %}" type="image/png">
+  <script src="https://cdn.tailwindcss.com" defer></script>
+  <meta name="description" content="Read guest reviews and ratings for Dallas Grand Beach Hotel — real guest feedback about rooms, service, and facilities.">
+  <meta name="robots" content="index,follow">
+  <meta property="og:site_name" content="Dallas Grand Beach Hotel">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Guest Reviews — Dallas Grand Beach Hotel">
+  <meta property="og:description" content="Real guest reviews and ratings for Dallas Grand Beach Hotel. See what visitors say about our rooms, pool, restaurant and service.">
+  {% if request %}<link rel="canonical" href="{{ request.build_absolute_uri }}" />{% endif %}
+    <style>
+      .star { color: #f59e0b; }
+      .review-card { transition: box-shadow .18s ease, transform .18s ease; }
+      .review-card:hover { box-shadow: 0 12px 30px rgba(0,0,0,0.12); transform: translateY(-4px); }
+    </style>
+  </head>
+  <body class="antialiased text-gray-900 min-h-screen flex flex-col m-0 bg-gray-50">
+
+    <!-- Navbar (kept consistent with other templates) -->
+    <header class="w-full bg-gray-800 shadow">
+      <nav class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <a href="{% url 'home' %}">
+            <img src="{% static 'images/resources/logo.png' %}" alt="Site logo" class="h-12 w-auto object-contain">
+          </a>
+        </div>
+
+        <ul class="hidden md:flex items-center gap-6 text-white font-medium">
+          <li><a href="{% url 'home' %}" class="text-white hover:text-blue-400 transition-colors">Home</a></li>
+          <li><a href="{% url 'rooms' %}" class="text-white hover:text-blue-400 transition-colors">Rooms</a></li>
+          <li><a href="{% url 'facilities' %}" class="text-white hover:text-blue-400 transition-colors">Facilities</a></li>
+          <li><a href="{% url 'reviews' %}" class="text-white hover:text-blue-400 transition-colors">Reviews</a></li>
+          <li><a href="{% url 'contact' %}" class="text-white hover:text-blue-400 transition-colors">Contact</a></li>
+        </ul>
+
+        <!-- Mobile menu button -->
+        <div class="md:hidden">
+          <button id="mobile-menu-btn" aria-label="open menu" class="text-white text-2xl">☰</button>
+        </div>
+      </nav>
+      
+      <!-- Mobile menu (hidden by default, shown when button clicked) -->
+      <div id="mobile-menu" class="hidden md:hidden bg-gray-800 bg-opacity-95 shadow-lg">
+        <ul class="flex flex-col items-start gap-0 px-6 py-4 text-white font-medium">
+          <li class="w-full py-2 border-b border-gray-700"><a href="{% url 'home' %}" class="text-white hover:text-blue-400 transition-colors block">Home</a></li>
+          <li class="w-full py-2 border-b border-gray-700"><a href="{% url 'rooms' %}" class="text-white hover:text-blue-400 transition-colors block">Rooms</a></li>
+          <li class="w-full py-2 border-b border-gray-700"><a href="{% url 'facilities' %}" class="text-white hover:text-blue-400 transition-colors block">Facilities</a></li>
+          <li class="w-full py-2 border-b border-gray-700"><a href="{% url 'reviews' %}" class="text-white hover:text-blue-400 transition-colors block">Reviews</a></li>
+          <li class="w-full py-2"><a href="{% url 'contact' %}" class="text-white hover:text-blue-400 transition-colors block">Contact & Support</a></li>
+        </ul>
+      </div>
+    </header>
+    
+    <script>
+      // Mobile menu toggle
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      
+      if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', function() {
+          mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Close menu when a link is clicked
+        mobileMenu.querySelectorAll('a').forEach(link => {
+          link.addEventListener('click', function() {
+            mobileMenu.classList.add('hidden');
+          });
+        });
+      }
+    </script>
+
+    <main class="flex-grow">
+      <!-- Hero -->
+      <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+          <h1 class="text-4xl md:text-5xl font-bold mb-2">Guest Reviews</h1>
+          <p class="text-blue-100 mt-2">See what guests are saying about Dallas Grand Beach Hotel</p>
+        </div>
+      </div>
+
+      <section class="max-w-7xl mx-auto px-6 py-12">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <!-- Left: rating summary -->
+          <div class="bg-white rounded-lg p-6 shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Overall rating</h2>
+            {% if google_reviews and not google_reviews.error %}
+            <div class="flex items-center gap-4">
+              <div class="flex flex-col items-start">
+                <div class="text-5xl font-bold">{{ google_reviews.rating }}</div>
+                <div class="text-sm text-gray-500">based on {{ google_reviews.total }} reviews</div>
+              </div>
+              <div class="flex items-center gap-1">
+                {% for i in "12345" %}
+                  {% if forloop.counter <= google_reviews.rating|floatformat:0 %}
+                    <span class="star">★</span>
+                  {% else %}
+                    <span class="star">☆</span>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="mt-6 space-y-3 text-sm">
+              <!-- Simple distribution placeholder: Google doesn't return distribution counts in Places API. -->
+              <div class="text-gray-600">Rating distribution is available on Google Reviews.</div>
+            </div>
+
+            <a href="https://www.google.com/travel/search?q=dallas%20grand%20beach%20resort%20near%20Sapele%20Urban%20V%2C%20Sapele&hl=en-NG&gl=ng" target="_blank" rel="noopener" class="inline-block mt-6 w-full text-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded">Read more on Google Reviews</a>
+            {% else %}
+            <!-- Fallback static summary -->
+            <div class="flex items-center gap-4">
+              <div class="flex flex-col items-start">
+                <div class="text-5xl font-bold">4.7</div>
+                <div class="text-sm text-gray-500">based on 1,234 reviews</div>
+              </div>
+              <div class="flex items-center gap-1">
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">☆</span>
+              </div>
+            </div>
+            <a href="https://www.google.com/travel/search?q=dallas%20grand%20beach%20resort%20near%20Sapele%20Urban%20V%2C%20Sapele&hl=en-NG&gl=ng" target="_blank" rel="noopener" class="inline-block mt-6 w-full text-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded">Read more on Google Reviews</a>
+            {% endif %}
+          </div>
+
+          <!-- Middle & Right: review feed and submit form -->
+          <div class="lg:col-span-2">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <!-- Render Google reviews if available -->
+              {% if google_reviews and not google_reviews.error %}
+                {% for r in google_reviews.reviews %}
+                <article class="bg-white rounded-lg p-4 review-card">
+                  <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0">
+                      {% if r.profile_photo %}
+                        <img src="{{ r.profile_photo }}" alt="{{ r.author }}" class="h-12 w-12 rounded-full object-cover">
+                      {% else %}
+                        <div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-semibold">{{ r.author|slice:":2"|upper }}</div>
+                      {% endif %}
+                    </div>
+                    <div>
+                      <div class="flex items-center gap-3">
+                        <h3 class="font-semibold">{{ r.author }}</h3>
+                        <div class="text-sm text-gray-500">• {{ r.time }}</div>
+                      </div>
+                      <div class="text-sm text-yellow-500 mt-1">{% for i in "12345" %}{% if forloop.counter <= r.rating %}★{% else %}☆{% endif %}{% endfor %}</div>
+                      <p class="mt-2 text-sm text-gray-700">{{ r.text }}</p>
+                    </div>
+                  </div>
+                </article>
+                {% endfor %}
+              {% else %}
+                <!-- Fallback static reviews -->
+                <article class="bg-white rounded-lg p-4 review-card">
+                  <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0">
+                      <div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-semibold">JA</div>
+                    </div>
+                    <div>
+                      <div class="flex items-center gap-3">
+                        <h3 class="font-semibold">James A.</h3>
+                        <div class="text-sm text-gray-500">• 2 days ago</div>
+                      </div>
+                      <div class="text-sm text-yellow-500 mt-1">★★★★☆</div>
+                      <p class="mt-2 text-sm text-gray-700">Fantastic stay — great service, clean rooms and a beautiful pool area. Breakfast buffet was excellent.</p>
+                    </div>
+                  </div>
+                </article>
+
+                <article class="bg-white rounded-lg p-4 review-card">
+                  <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0">
+                      <div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-semibold">KS</div>
+                    </div>
+                    <div>
+                      <div class="flex items-center gap-3">
+                        <h3 class="font-semibold">Kemi S.</h3>
+                        <div class="text-sm text-gray-500">• 1 week ago</div>
+                      </div>
+                      <div class="text-sm text-yellow-500 mt-1">★★★★★</div>
+                      <p class="mt-2 text-sm text-gray-700">Exceptional experience. The staff went above and beyond to make our anniversary special.</p>
+                    </div>
+                  </div>
+                </article>
+
+                <article class="bg-white rounded-lg p-4 review-card">
+                  <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0">
+                      <div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-semibold">MO</div>
+                    </div>
+                    <div>
+                      <div class="flex items-center gap-3">
+                        <h3 class="font-semibold">M. O.</h3>
+                        <div class="text-sm text-gray-500">• 3 weeks ago</div>
+                      </div>
+                      <div class="text-sm text-yellow-500 mt-1">★★★☆☆</div>
+                      <p class="mt-2 text-sm text-gray-700">Good location and value, but Wi-Fi was intermittent during our stay.</p>
+                    </div>
+                  </div>
+                </article>
+
+                <article class="bg-white rounded-lg p-4 review-card">
+                  <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0">
+                      <div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-semibold">AN</div>
+                    </div>
+                    <div>
+                      <div class="flex items-center gap-3">
+                        <h3 class="font-semibold">Ada N.</h3>
+                        <div class="text-sm text-gray-500">• 1 month ago</div>
+                      </div>
+                      <div class="text-sm text-yellow-500 mt-1">★★★★☆</div>
+                      <p class="mt-2 text-sm text-gray-700">Lovely property and attentive staff. Room service could be quicker.</p>
+                    </div>
+                  </div>
+                </article>
+              {% endif %}
+            </div>
+
+            <!-- Review submission placeholder -->
+            <div class="bg-white rounded-lg p-6 shadow-md">
+              <h3 class="text-lg font-semibold mb-3">Share your experience</h3>
+              <p class="text-sm text-gray-600 mb-4">We'd love your feedback. Leave a review on Google or submit it here and we'll follow up.</p>         
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer (kept consistent) -->
+    <footer class="bg-gray-900 text-gray-200 mt-auto w-full">
+      <div class="w-full px-6 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <a href="#" class="inline-block mb-4">
+            <img src="{% static 'images/resources/logo.png' %}" alt="Dallas Grand Beach Hotel" class="h-12 w-auto object-contain">
+          </a>
+          <p class="text-sm text-gray-300">Dallas Grand Beach Hotel & Resort Suite<br>Oghara, Delta State</p>
+          <p class="mt-4 text-sm text-gray-400">© 2025 Dallas Grand Beach Hotel. All rights reserved.</p>
+        </div>
+        <div>
+          <h4 class="text-lg font-semibold mb-3">Quick Links</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="{% url 'home' %}" class="hover:text-white">Home</a></li>
+            <li><a href="{% url 'rooms' %}" class="hover:text-white">Rooms</a></li>
+            <li><a href="{% url 'facilities' %}" class="hover:text-white">Facilities</a></li>
+            <li><a href="{% url 'reviews' %}" class="hover:text-white">Reviews</a></li>
+            <li><a href="{% url 'contact' %}" class="hover:text-white">Contact & Support</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-lg font-semibold mb-3">Contact</h4>
+          <p class="text-sm text-gray-300">Phone: <a href="tel:+1234567890" class="hover:text-white">+1 (234) 567-890</a></p>
+          <p class="text-sm text-gray-300">Email: <a href="mailto:info@dallasgrandbeach.com" class="hover:text-white">info@dallasgrandbeach.com</a></p>
+          <p class="text-sm text-gray-300 mt-2">Reception: <span class="text-sm">Open 24/7</span></p>
+        </div>
+        <div>
+          <h4 class="text-lg font-semibold mb-3">Follow Us</h4>
+          <div class="flex items-center gap-4">
+            <a href="#" class="block" aria-label="Facebook">
+              <img src="{% static 'images/resources/social/facebook.svg' %}" alt="Facebook" class="h-6 w-6">
+            </a>
+            <a href="#" class="block" aria-label="Instagram">
+              <img src="{% static 'images/resources/social/instagram.svg' %}" alt="Instagram" class="h-6 w-6">
+            </a>
+            <a href="#" class="block text-gray-300 hover:text-white" aria-label="Twitter">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557a9.83 9.83 0 0 1-2.828.775A4.932 4.932 0 0 0 23.337 3a9.864 9.864 0 0 1-3.127 1.195 4.916 4.916 0 0 0-8.38 4.482A13.944 13.944 0 0 1 1.671 3.149 4.916 4.916 0 0 0 3.195 9.723 4.9 4.9 0 0 1 .964 9v.062a4.916 4.916 0 0 0 3.941 4.817 4.902 4.902 0 0 1-2.212.084 4.918 4.918 0 0 0 4.588 3.417A9.868 9.868 0 0 1 0 19.54a13.94 13.94 0 0 0 7.548 2.212c9.056 0 14.01-7.506 14.01-14.01 0-.213-.005-.425-.014-.636A10.012 10.012 0 0 0 24 4.557z"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 w-full">
+        <div class="w-full px-6 py-4 text-xs text-gray-500 flex flex-col md:flex-row justify-between items-center">
+          <div>Privacy Policy · Terms of Use · Cookies</div>
+          <div class="mt-2 md:mt-0">Designed & Built with care</div>
+        </div>
+      </div>
+    </footer>
+
+  </body>
+</html>
