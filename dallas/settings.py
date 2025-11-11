@@ -26,13 +26,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-cyo+n&o=+o8h$2as5w6du
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
-<<<<<<< HEAD
-ALLOWED_HOSTS = ['dallas-owo3.onrender.com','localhost','127.0.0.1']
-=======
 # ALLOWED_HOSTS should include just the domain (no protocol)
 # For Render, use just the domain name without https://
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,dallas-owo3.onrender.com').split(',')
->>>>>>> ba8d434 (render Dallas Hotel)
 
 
 # Application definition
